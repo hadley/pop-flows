@@ -6,7 +6,13 @@ if (!exists("boundary")) {
   # Remove alaska and hawawii for now
   boundary <- subset(boundary, !(state %in% c(2, 15)))
 
-  polys <- split(boundary, boundary$group)  
+  polys <- split(boundary, boundary$group)
+  source("poly.r")
+  centers <- plyr::ddply(boundary, c("state", "county"), info)
+  
+  flow <- read.csv("flow.csv")
+  flow <- merge(flow, centers, by.x = c("state_to", "county_to"),
+    by.y = c("state", "county"))
 }
 
 render_borders <- function(item, painter, exposed) { 
@@ -43,6 +49,26 @@ hover_county <- function(layer, event) {
 
 select_county <- function(layer, event) {
   selected <<- highlighted
+  qupdate(flow_layer)
+}
+
+render_flow <- function(item, painter, exposed) {
+  if (is.na(selected)) return()
+  county <- as.list(polys[[selected + 1]][1, 1:2])
+  
+  movement <- subset(flow, state_from == county$state & 
+    county_from == county$county)
+  movement$size <- sqrt(abs(movement$change) / max(abs(movement$change)))
+  
+  flow_in <- subset(movement, change > 0)
+  flow_out <- subset(movement, change < 0)
+  
+  circle <- qglyphCircle(2)
+  
+  qdrawGlyph(painter, circle, flow_in$long, flow_in$lat, 
+    stroke = "NA", fill = "black", cex = 3 * flow_in$size + 1)
+  qdrawGlyph(painter, circle, flow_out$long, flow_out$lat, 
+    stroke = "NA", fill = "red", cex = 3 * flow_out$size + 1)
 }
 
 if (exists("view")) view$close()
@@ -57,5 +83,9 @@ borders$setLimits(qrect(range(boundary$long), range(boundary$lat)))
 
 highlight <- qlayer(root, render_highlight)
 highlight$setLimits(borders$limits())
+
+flow_layer <- qlayer(root, render_flow)
+flow_layer$setLimits(borders$limits())
+
 
 print(view)
