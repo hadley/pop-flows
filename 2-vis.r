@@ -1,5 +1,12 @@
 library(qtpaint)
 
+alpha <- function (colour, alpha) {
+  col <- col2rgb(colour, TRUE)/255
+  col[4, ] <- alpha
+  rgb(col[1, ], col[2, ], col[3, ], col[4, ])
+}
+
+
 # County boundaries
 if (!exists("boundary")) {
   options(stringsAsFactors = FALSE)
@@ -79,9 +86,9 @@ render_flow <- function(item, painter, exposed) {
   circle <- qglyphCircle(2)
   
   qdrawGlyph(painter, circle, flow_in$long, flow_in$lat, 
-    stroke = "NA", fill = "black", cex = 3 * flow_in$size + 1)
+    stroke = "NA", fill = alpha("black", 0.5), cex = 3 * flow_in$size + 1)
   qdrawGlyph(painter, circle, flow_out$long, flow_out$lat, 
-    stroke = "NA", fill = "red", cex = 3 * flow_out$size + 1)
+    stroke = "NA", fill = alpha("red", 0.5), cex = 3 * flow_out$size + 1)
 }
 
 if (exists("view")) view$close()
@@ -99,7 +106,6 @@ highlight$setLimits(borders$limits())
 
 flow_layer <- qlayer(root, render_flow)
 flow_layer$setLimits(borders$limits())
-
 
 print(view)
 
