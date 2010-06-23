@@ -89,3 +89,18 @@ flow_layer$setLimits(borders$limits())
 
 
 print(view)
+
+# How might we describe this with a grammar?
+#
+# geom_poly(boundaries, aes(long, lat, id = id), 
+#   colour = "grey50", fill = NA) + brush("closest", "hover", "transient") +
+#   geom_poly(subset = .(id == parent$id), fill = "grey80", colour = NA) +
+#   geom_point(subset = .(id == parent$id), data = migration, 
+#     aes(size = abs(n), colour = sign(n))) + 
+#   scale_size(dynamic = TRUE)
+#    
+# Thoughts:
+#   * need full inheritance tree, a la protovis
+#   * brush needs to be associated with a layer?
+#   * dynamic scales would not be constant over time, but would adapt to 
+#     displayed data
