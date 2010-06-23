@@ -2,6 +2,7 @@ library(qtpaint)
 
 # County boundaries
 if (!exists("boundary")) {
+  options(stringsAsFactors = FALSE)
   boundary <- read.csv("boundaries.csv.bz2")
   # Remove alaska and hawawii for now
   boundary <- subset(boundary, !(state %in% c(2, 15)))
@@ -13,6 +14,8 @@ if (!exists("boundary")) {
   flow <- read.csv("flow.csv")
   flow <- merge(flow, centers, by.x = c("state_to", "county_to"),
     by.y = c("state", "county"))
+    
+  fips <- subset(read.csv("fips.csv"), level <= 50)[c(1, 2, 7)]
 }
 
 render_borders <- function(item, painter, exposed) { 
@@ -22,10 +25,20 @@ render_borders <- function(item, painter, exposed) {
   }
 }
 
-render_highlight <- function(item, painter, exposed) { 
+render_highlight <- function(item, painter, exposed) {
+  if (is.na(highlighted)) return()
+   
   h_poly <- polys[[highlighted + 1]]
   qdrawPolygon(painter, h_poly$long, h_poly$lat, 
     stroke = "NA", fill = "grey70")
+  
+  loc <- as.list(h_poly[1, c("state", "county")])
+  county <- with(fips, name[state == loc$state & county == loc$county])
+  state <- with(fips, name[state == loc$state & county == 0])
+  
+  qstrokeColor(painter) <- "black"
+  qdrawText(painter, paste(county, state), 
+    min(boundary$long), min(boundary$lat), "left", "bottom")
 
   s_poly <- polys[[selected + 1]]
   qdrawPolygon(painter, s_poly$long, s_poly$lat, 
