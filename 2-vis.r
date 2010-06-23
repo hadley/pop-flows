@@ -25,6 +25,7 @@ if (!exists("boundary")) {
   fips <- subset(read.csv("fips.csv"), level <= 50)[c(1, 2, 7)]
 }
 
+# Draw county borders
 render_borders <- function(item, painter, exposed) { 
   qstrokeColor(painter) <- "grey70" 
   for(poly in polys) {
@@ -32,6 +33,7 @@ render_borders <- function(item, painter, exposed) {
   }
 }
 
+# Draw highlighted and selected counties
 render_highlight <- function(item, painter, exposed) {
   if (is.na(highlighted)) return()
    
@@ -55,6 +57,7 @@ render_highlight <- function(item, painter, exposed) {
 highlighted <<- NA
 selected <<- NA
 
+# Figure out which county is currently under the mouse
 hover_county <- function(layer, event) {
   mat <- layer$deviceTransform(event)$inverted()
 
@@ -67,11 +70,13 @@ hover_county <- function(layer, event) {
   qupdate(highlight)
 }
 
+# On click, select highlighted county
 select_county <- function(layer, event) {
   selected <<- highlighted
   qupdate(flow_layer)
 }
 
+# Render movement between counties
 render_flow <- function(item, painter, exposed) {
   if (is.na(selected)) return()
   county <- as.list(polys[[selected + 1]][1, 1:2])
