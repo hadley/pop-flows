@@ -5,6 +5,7 @@ alpha <- function (colour, alpha) {
   col[4, ] <- alpha
   rgb(col[1, ], col[2, ], col[3, ], col[4, ])
 }
+rescale01 <- function(x) (x - min(x, na.rm = TRUE)) / diff(range(x, na.rm = TRUE))
 
 
 # County boundaries
